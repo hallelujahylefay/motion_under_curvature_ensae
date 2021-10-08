@@ -1,0 +1,89 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{graphicx}
+\usepackage[french, ruled, vlined]{algorithm2e}
+\newtheorem{theorem}{Théorème}[section]
+\newtheorem{lemme}{Lemme}
+\usepackage[frenchb]{babel}
+\newtheorem{definition}{Definition}
+\begin{document}
+\title{Jeu de tir à la corde, temps de sortie d'un domaine et équations d'Hamilton-Jacobi-Bellman}
+\author{LE FAY Yvann}
+\date{Septembre 2021}
+\newpage
+\begin{abstract}
+	Nous développons l'exemple d'un jeu de type $\min \max$ à deux joueurs, en temps et à pas spatial discrets. L'objectif du premier joueur est de minimiser son temps de sortie d'un domaine $\Omega\subset \mathbb{R}^2$, l'objectif du second joueur est de l'en empêcher en perturbant de manière déterministe sa trajectoire. 
+
+	Nous proposons une stratégie optimale en temps discret se basant sur le principe de programmation dynamique de Bellman. Nous nous appuyons sur \textit{A deterministic-control-based approach to motion by Curvature} de Robert V. Kohn et Sylvia Serfaty pour interpréter la stratégie optimale lorsque le paramètre de normalisation spatiale et temporelle tend vers $0$ comme des solutions à des équations elliptiques dégénérées d'Hamilton-Jacobi-Bellman.
+	
+	Pour un développement plus complet, nous redirigeons le lecteur vers le papier de Robert V. Kohn et Sylvia Serfaty.
+\end{abstract}
+\section{Le jeu de Paul et Carole}
+Considérons le jeu suivant. Soit $\Omega$ un compact de $\mathbb{R}^2$, $\varepsilon$ un réel strictement positif. Il y a deux joueurs, Paul et Carole. Paul commence avec la donnée initiale $x\in\Omega$, son but est d'atteindre la frontière $\partial\Omega$. Le but de Carole est de l'en empêcher ou au moins de le ralentir. Le jeu se joue en temps discret, à chaque tour,
+\begin{enumerate}
+	\item Paul choisit une direction, i.e la donnée d'un vecteur unitaire, $v\in\mathbb{R}^2$.
+	\item Carole choisit si $b\in\{-1, 1\}$ et remplace $v$ par $bv$.
+	\item Paul se déplace d'une longueur $\sqrt{2}\varepsilon$, se déplaçant de $x$ à $x+\sqrt{2}\varepsilon bv$
+\end{enumerate}
+Est-ce que Paul peut nécessairement atteindre le bord ? Existe-t-il une stratégie optimale pour Paul, i.e une stratégie qui minimise son temps de sortie sachant que Carole choisira à chaque tour, $b$ de manière optimale ?
+
+\section{Le temps minimal de sortie}
+On définit le temps minimal de sortie normalisé de Paul partant d'un point $x$ et en suivant une stratégie optimale par $U^\varepsilon(x) = k\varepsilon^2$ où $k$ est le nombre d'étapes nécessaires à sa sortie.
+
+Si Paul commence le jeu à $x\in\mathbb{R}^2\backslash \Omega$, alors il est déjà sorti et $U^\varepsilon(x) = 0$. S'il commence à un point $x\in\Omega$ tel que $x+\varepsilon\sqrt{2}v$ et $x-\varepsilon\sqrt{2}v$ appartiennent à $\mathbb{R}^2\backslash\Omega$, pour un certain vecteur unitaire $v$, alors Paul sort en un temps minimal $U^\varepsilon(x) = \varepsilon^2$. Une caractérisation de tels points est la suivante. Considérons tous les segments de longueur $2\sqrt{2}\varepsilon$ dont les extrémités sont sur $\partial \Omega$ ou dans $\mathbb{R}^2\backslash\Omega$. Les milieux de ces segments définissent une courbe fermée $\gamma_1$, qui partitionne $\mathb{R}^2$ en deux régions. Les points $x\in\Omega$ à partir desquels Paul peut quitter en $\Omega$ en une étape sont ceux qui forment $\gamma_1$ et ceux dans la région non bornée de $\mathbb{R}^2\backslash\gamma_1$. Notons $\Omega_1$ le complémentaire de l'ensemble de ces points, c'est-à-dire l'ensemble des $x\in\Omega$ à partir desquels Paul a besoin d'au moins deux étapes pour quitter. En réitérant cette procédure, on obtient une famille de sous-domaines, $\Omega_1\subset\Omega_2\subset\ldots$ avec $\partial\Omega_j=\gamma_j$, tels que Paul a besoin d'au moins $j+1$ étapes pour quitter $\Omega_j$. On a alors $U^\varepsilon = (j+1)\varepsilon^2$ sur $\Omega_j\backslash\Omega_{j+1}$. Un lemme nous assurera que si $\Omega$ est borné alors Paul peut forcément gagner en au plus $C/\varepsilon^2$. Ainsi $\Omega_j$ est vide pour $j$ suffisamment grand et le temps normalisé de sortie $U^\varepsilon$ est uniformément borné. La définition formelle de $U^\varepsilon$ est la suivante
+\begin{definition}
+	Soit $\Omega$ un domaine du plan, convexe ou non. Si $x\in\mathbb{R}^2\backslash\Omega$ alors $U^\varepsilon(x) = 0$. Pour $x\in\Omega$, $U^\varepsilon(x) = \varepsilon^2$ s'il existe un vecteur unitaire $v$ tel que $x+\varepsilon\sqrt{2}v$ et $x-\varepsilon\sqrt{2}v$ appartient à $\mathbb{R}^2\backslash \Omega$. Pour tout $k\geq 1$ et $x\in \Omega$, $U^\varepsilon(x) = k\varepsilon^2$ s'il existe un vecteur unitaire $v$ tel que $\max(U^\varepsilon(x+\varepsilon \sqrt{2}v), U^\varepsilon(x-\varepsilon \sqrt{2}v))=(k-1)\varepsilon^2$. On a le programme dynamique suivant
+	\begin{align*}
+		U^\varepsilon(x) =
+		\left\{\begin{array}{ll}
+	\min_{||v||=1}\max_{b=\pm 1} \{\varepsilon^2 + U^\varepsilon(x+\varepsilon\sqrt{2}bv)\} & \textup{ pour } x\in \Omega\\
+ 0 & \textup{ pour } x\in\mathbb{R}^2\backslash\Omega
+\end{array}
+\right.\ll
+\end{align*}
+\end{definition}
+\subsection{Principe de programmation dynamique et majoration uniforme du temps de sortie}
+La majoration du temps de sortie donnée par le lemme suivant nous permet d'implémenter le principe de programmation dynamique précédent.
+
+\begin{lemme}
+	Pour tout domaine planaire $\Omega$, $U^\varepsilon$ est uniformément borné par $U^\varepsilon \leq \textup{diam}(\Omega)^2/2$. Dans le cas où $\Omega$ est convexe, $U^\varepsilon \leq |\Omega|/2\pi$.
+\end{lemme}
+
+
+
+
+
+%Le temps de sortie (après normalisation) de Paul partant du point $x$ selon la stratégie optimale est notée $U^\varepsilon(x)$, si Paul met $k$ étapes à sortir de $\Omega$ en suivant la stratégie optimale, alors on pose $U^\varepsilon(x) = k\varepsilon^2$. Le principe de programmation dynamique assure que
+%\begin{align*}
+%U^{\varepsilon}(x) = \min_{||v||=1}\max_{b=\pm 1} \{\epsilon^2 + U^{\varepsilon}(x+\sqrt{2}\epsilon b v)\}
+%\end{align*}
+
+
+Nous proposons un algorithme de calcul de $U^\varepsilon(x)$ fondé sur le principe de programmation dynamique, en se restreignant à un sous-ensemble $V$ fini de vecteurs normés. La notation . est mise pour la concaténation. Aussi, $S_v(s)$ est mis pour la projection de $s\in S$ sur la coordonnée correspondant à l'ensemble $\mathcal{V}$, $S_v(s)[-1]$ est mis pour le dernier vecteur $v$ à avoir été ajouté à $\mathcal{V}$. Par abus de notation, on omet l'argument $s$, de manière à ce que $\{S_t : (S_v[-1], S_b[-1])=(v,b)\}$ dénote l'ensemble des valeurs de $t$ prises par les éléments $s\in S$ tels que pour tout élément $s$, le couple formé de la dernière coordonnée $v$ de $\mathcal{V}$ ($S_v(s)[-1]$) et la dernière coordonnée $b$ de $\mathcal{B}$ ($S_b(s)[-1]$) coïncident avec $(v,b)$.
+
+\begin{algorithm}[H]
+	$f : (x, t, \mathcal{V}, \mathcal{B})$\\
+	\Si{$x\in \Omega$ \textup{ et } $t\leq \frac{\textup{diam}(\Omega)^2}{2}$}{
+	$S \leftarrow \varnothing$\\
+	\Pour{$(v,b)\in V\times\{-1,1\}$}{
+		$S\leftarrow S . \{f(x+\sqrt{2}\varepsilon b v, t+\epsilon^2, \mathcal{V}.\{v\}, \mathcal{B}.\{b\})\}$}
+$v^* \leftarrow \textup{argmin}_{v\in V}\{\max_{b\in\{-1, 1\}}\{S_t : (S_v[-1], S_b[-1])=(v, b)\}\}$\\
+			$b^* \leftarrow \textup{argmax}_{b\in \{-1, 1\}} \{S_t : S_v[-1] = v^*\}$\\
+			$\mathcal{V} \leftarrow \mathcal{V}.\{v^*\}$\\
+			$\mathcal{B}\leftarrow \mathcal{B}.\{b^*\}$\\
+			$t\leftarrow S_t : (S_v[-1], S_b[-1]) = (v^*, b^*)$\\
+			$x\leftarrow x+\sqrt{2}\varepsilon b^* v^*$\\
+		}
+	\textup{Renvoyer } $(x,t,\mathcal{V},\mathcal{B})$
+\end{algorithm}
+
+L'algorithme termine. En effet, à chaque étape, l'argument en $t$ croit de $\varepsilon^2$ et est borné par $\textup{diam}(\Omega)^2/2$. A chaque appel de $f$, il y a $2|V|$ appels récursifs à $f$, le calcul de $v^*$ est linéaire en $|V|$, le reste se fait en temps constant. La complexité est de la forme $C(n) = 2|V|C(n+1) + 2|V|$ pour $n\leq \textup{diam}(\Omega)^2/2\varepsilon^2$. Ainsi pour $\varepsilon$ petit, on a une complexité en $O((2|V|)^{\textup{diam}(\Omega)^2/2\varepsilon^2})$.
+
+Dans le cas convexe, la borne plus fine pour $t$ donne une complexité en $O((2|V|)^{|\Omega|/2\pi\varepsilon^2})$.
+
+\subsection{Mouvement par courbure et EDP}
+\subsubsection{Le cas convexe}
+\subsubsection{Le cas non convexe}
+
+\end{document}
